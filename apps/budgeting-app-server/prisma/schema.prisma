@@ -1,0 +1,72 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Budget {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  totalAmount Float?
+  startDate   DateTime?
+  endDate     DateTime?
+  title       String?
+  user        User?     @relation(fields: [userId], references: [id])
+  userId      String?
+  expenses    Expense[]
+}
+
+model RecurringTransaction {
+  id           String    @id @default(cuid())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  startDate    DateTime?
+  amount       Float?
+  endDate      DateTime?
+  description  String?
+  intervalType String?
+  category     Category? @relation(fields: [categoryId], references: [id])
+  categoryId   String?
+  user         User?     @relation(fields: [userId], references: [id])
+  userId       String?
+}
+
+model Category {
+  id                    String                 @id @default(cuid())
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  name                  String?
+  recurringTransactions RecurringTransaction[]
+  expenses              Expense[]
+}
+
+model Expense {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  amount      Float?
+  date        DateTime?
+  description String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  categoryId  String?
+  budget      Budget?   @relation(fields: [budgetId], references: [id])
+  budgetId    String?
+}
+
+model User {
+  id                    String                 @id @default(cuid())
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  firstName             String?
+  lastName              String?
+  username              String                 @unique
+  email                 String?                @unique
+  password              String
+  roles                 Json
+  budgets               Budget[]
+  recurringTransactions RecurringTransaction[]
+}
